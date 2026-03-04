@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.gitignore
+README.md
+.github
+.env
+.env.local
+.env.*.local
+dev-server.bat
+plan/
+*.log
+.DS_Store
+Thumbs.db
