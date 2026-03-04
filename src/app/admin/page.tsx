@@ -4,6 +4,7 @@ import { useEffect, useCallback } from 'react'
 import { PasswordGate } from '@/components/Admin/PasswordGate'
 import { Controls } from '@/components/Admin/Controls'
 import { ThemeSelector } from '@/components/Admin/ThemeSelector'
+import { FontSelector } from '@/components/Admin/FontSelector'
 import { useRakaat } from '@/hooks/useRakaat'
 import Link from 'next/link'
 
@@ -66,6 +67,12 @@ export default function AdminPage() {
 
           {/* Theme & Background Selector */}
           <ThemeSelector />
+
+          {/* Divider */}
+          <div className="border-t border-slate-800" />
+
+          {/* Font Settings */}
+          <FontSelector />
         </main>
       </div>
     </PasswordGate>

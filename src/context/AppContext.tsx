@@ -30,6 +30,11 @@ const DEFAULT_STATE: SharedState = {
   currentRakaat: 1,
   selectedTheme: DEFAULT_THEME,
   selectedBackground: DEFAULT_BACKGROUND,
+  fontFamily: 'system-ui, sans-serif',
+  fontScale: 100,
+  fontBold: true,
+  fontItalic: false,
+  fontUnderline: false,
   lastUpdated: 0,
 }
 
@@ -52,6 +57,15 @@ function sanitize(raw: SharedState): SharedState {
       raw.selectedBackground.startsWith('data:')
         ? raw.selectedBackground
         : DEFAULT_BACKGROUND,
+    fontFamily: typeof raw.fontFamily === 'string' && raw.fontFamily
+      ? raw.fontFamily
+      : DEFAULT_STATE.fontFamily,
+    fontScale: Number.isFinite(raw.fontScale) && raw.fontScale >= 50 && raw.fontScale <= 200
+      ? raw.fontScale
+      : DEFAULT_STATE.fontScale,
+    fontBold: typeof raw.fontBold === 'boolean' ? raw.fontBold : DEFAULT_STATE.fontBold,
+    fontItalic: typeof raw.fontItalic === 'boolean' ? raw.fontItalic : DEFAULT_STATE.fontItalic,
+    fontUnderline: typeof raw.fontUnderline === 'boolean' ? raw.fontUnderline : DEFAULT_STATE.fontUnderline,
     lastUpdated: raw.lastUpdated ?? 0,
   }
 }
@@ -87,6 +101,8 @@ interface AppContextType {
   setTheme: (themeId: ThemeId) => void
   selectedBackground: string
   setBackground: (bgId: string) => void
+  fontSettings: { fontFamily: string; fontScale: number; fontBold: boolean; fontItalic: boolean; fontUnderline: boolean }
+  setFontSettings: (patch: Partial<SharedState>) => void
   isAdminLoggedIn: boolean
   adminLogin: (password: string) => Promise<boolean>
   adminLogout: () => void
@@ -175,6 +191,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     update({ selectedBackground: bgId })
   }, [update])
 
+  const setFontSettings = useCallback((patch: Partial<SharedState>) => {
+    update(patch)
+  }, [update])
+
   // ── Admin Auth ────────────────────────────────────────────────────────
   const isAdminLoggedIn = isSessionValid(sessionToken)
 
@@ -201,6 +221,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTheme,
     selectedBackground: sharedState.selectedBackground,
     setBackground,
+    fontSettings: {
+      fontFamily: sharedState.fontFamily,
+      fontScale: sharedState.fontScale,
+      fontBold: sharedState.fontBold,
+      fontItalic: sharedState.fontItalic,
+      fontUnderline: sharedState.fontUnderline,
+    },
+    setFontSettings,
     isAdminLoggedIn,
     adminLogin,
     adminLogout,

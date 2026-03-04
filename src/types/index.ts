@@ -77,5 +77,11 @@ export interface SharedState {
   currentRakaat: number
   selectedTheme: ThemeId
   selectedBackground: string
+  // Font settings untuk teks utama di display
+  fontFamily: string      // nilai CSS font-family
+  fontScale: number       // 50–200 (persentase ukuran, 100 = default)
+  fontBold: boolean
+  fontItalic: boolean
+  fontUnderline: boolean
   lastUpdated: number
 }

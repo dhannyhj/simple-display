@@ -18,6 +18,11 @@ export const DEFAULT_SHARED_STATE: SharedState = {
   currentRakaat: 1,
   selectedTheme: DEFAULT_THEME,
   selectedBackground: DEFAULT_BACKGROUND,
+  fontFamily: 'system-ui, sans-serif',
+  fontScale: 100,
+  fontBold: true,
+  fontItalic: false,
+  fontUnderline: false,
   lastUpdated: 0,
 }
 
