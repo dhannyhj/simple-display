@@ -17,10 +17,10 @@ export function Clock({ position = 'bottom-right' }: ClockProps) {
     <div
       className={`absolute bottom-6 ${posClass} text-right ${currentTheme.textSecondary} select-none`}
     >
-      <div className="text-3xl font-mono font-semibold tracking-widest leading-none">
+      <div className="text-5xl md:text-6xl font-mono font-semibold tracking-widest leading-none">
         {time}
       </div>
-      <div className="text-xs mt-1 opacity-70 tracking-wide">{date}</div>
+      <div className="text-base md:text-xl mt-2 opacity-70 tracking-wide">{date}</div>
     </div>
   )
 }

@@ -17,6 +17,7 @@ import { TOTAL_SALAM } from '@/lib/rakaat-constants'
 import {
   STORAGE_KEYS,
   initDefaultPassword,
+  getStoredHash,
   generateSessionToken,
   isSessionValid,
   verifyPassword,
@@ -44,9 +45,13 @@ function sanitize(raw: SharedState): SharedState {
     selectedTheme: validThemeIds.includes(raw.selectedTheme as string)
       ? raw.selectedTheme
       : DEFAULT_THEME,
-    selectedBackground: validBgIds.includes(raw.selectedBackground)
-      ? raw.selectedBackground
-      : DEFAULT_BACKGROUND,
+    selectedBackground: validBgIds.includes(raw.selectedBackground) ||
+      raw.selectedBackground.startsWith('/') ||
+      raw.selectedBackground.startsWith('http://') ||
+      raw.selectedBackground.startsWith('https://') ||
+      raw.selectedBackground.startsWith('data:')
+        ? raw.selectedBackground
+        : DEFAULT_BACKGROUND,
     lastUpdated: raw.lastUpdated ?? 0,
   }
 }
@@ -174,8 +179,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const isAdminLoggedIn = isSessionValid(sessionToken)
 
   const adminLogin = useCallback(async (password: string): Promise<boolean> => {
-    const storedHash = localStorage.getItem(STORAGE_KEYS.PASSWORD_HASH)
-    if (!storedHash) return false
+    // getStoredHash() memastikan hash sudah ada sebelum dibaca
+    // menghindari race condition saat initDefaultPassword() belum selesai
+    const storedHash = await getStoredHash()
     const valid = await verifyPassword(password, storedHash)
     if (valid) setSessionToken(generateSessionToken())
     return valid

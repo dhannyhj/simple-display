@@ -69,6 +69,20 @@ export function getBackgroundStyle(
   bgColor: string,
   bgSecondaryColor: string
 ): React.CSSProperties {
+  // Handle gambar: URL eksternal, data URI, atau path lokal /img/
+  if (
+    backgroundId.startsWith('http://') ||
+    backgroundId.startsWith('https://') ||
+    backgroundId.startsWith('data:') ||
+    backgroundId.startsWith('/')
+  ) {
+    return {
+      backgroundImage: `url(${backgroundId})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }
+  }
+
   const option = backgroundOptions.find((b) => b.id === backgroundId)
   if (!option || option.type === 'solid') return {}
 
