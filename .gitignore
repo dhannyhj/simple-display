@@ -1,6 +1,7 @@
 *.log
 .DS_Store
 .env
+.env.local
 .env.backup
 .env.production
 .phpactor.json
@@ -11,6 +12,7 @@
 /.phpunit.cache
 /.vscode
 /.zed
+/.next
 /auth.json
 /node_modules
 /public/build
@@ -22,3 +24,4 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+tsconfig.tsbuildinfo
