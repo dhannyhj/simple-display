@@ -3,10 +3,13 @@
 import { useEffect, useCallback } from 'react'
 import { RakaatDisplay } from '@/components/Display/RakaatDisplay'
 import { useRakaat } from '@/hooks/useRakaat'
+import LoadingFallback from '@/components/Display/LoadingFallback'
+import { useApp } from '@/context/AppContext'
 
 // Display page - public view untuk TV/Android Box
 export default function DisplayPage() {
   const { nextRakaat, prevRakaat, isLast, isFirst } = useRakaat()
+  const { isInitialLoading } = useApp()
 
   // Keyboard shortcut: → / Space = next, ← = prev
   const handleKeyDown = useCallback(
@@ -27,6 +30,8 @@ export default function DisplayPage() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
+
+  if (isInitialLoading) return <LoadingFallback />
 
   return <RakaatDisplay />
 }

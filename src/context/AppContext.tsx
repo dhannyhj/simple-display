@@ -22,6 +22,9 @@ import {
   isSessionValid,
   verifyPassword,
 } from '@/lib/password-utils'
+import { fetchWithRetry } from '@/lib/api-client'
+import { getPollingInterval } from '@/lib/feature-detect'
+import { RAKAAT_CACHE_KEY } from '@/components/Display/LoadingFallback'
 
 // ===========================
 // Default Shared State
@@ -87,19 +90,35 @@ function sanitize(raw: SharedState): SharedState {
 // API helpers (client-side)
 // ===========================
 async function fetchState(): Promise<SharedState> {
-  const res = await fetch('/api/state', { cache: 'no-store' })
-  if (!res.ok) throw new Error('fetch /api/state failed')
-  return res.json()
+  return fetchWithRetry<SharedState>('/api/state', {
+    retries: 3,
+    timeout: 5000,
+    init: { cache: 'no-store' },
+  })
 }
 
 async function pushState(patch: Partial<SharedState>): Promise<SharedState> {
-  const res = await fetch('/api/state', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(patch),
+  return fetchWithRetry<SharedState>('/api/state', {
+    retries: 2,
+    timeout: 5000,
+    init: {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    },
   })
-  if (!res.ok) throw new Error('POST /api/state failed')
-  return res.json()
+}
+
+// Simpan rakaat ke localStorage sebagai fallback offline
+function cacheRakaatLocally(count: number) {
+  try {
+    localStorage.setItem(
+      RAKAAT_CACHE_KEY,
+      JSON.stringify({ count, timestamp: Date.now() })
+    )
+  } catch {
+    // localStorage bisa gagal di some TV Box, abaikan
+  }
 }
 
 // ===========================
@@ -122,6 +141,7 @@ interface AppContextType {
   isAdminLoggedIn: boolean
   adminLogin: (password: string) => Promise<boolean>
   adminLogout: () => void
+  isInitialLoading: boolean
 }
 
 // ===========================
@@ -134,6 +154,7 @@ const AppContext = createContext<AppContextType | null>(null)
 // ===========================
 export function AppProvider({ children }: { children: ReactNode }) {
   const [sharedState, setSharedState] = useState<SharedState>(DEFAULT_STATE)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
   const lastUpdatedRef = useRef<number>(0)
 
   // Admin session — tetap di localStorage (device-local, tidak sync ke server)
@@ -147,7 +168,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     initDefaultPassword()
   }, [])
 
-  // ── Initial fetch + polling 3 detik ──────────────────────────────────
+  // ── Initial fetch + adaptive polling (3s normal / 5s TV Box) ───────────
   useEffect(() => {
     let active = true
 
@@ -155,17 +176,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const fresh = await fetchState()
         if (!active) return
+        setIsInitialLoading(false)
         if (fresh.lastUpdated !== lastUpdatedRef.current) {
           lastUpdatedRef.current = fresh.lastUpdated
-          setSharedState(sanitize(fresh))
+          const sanitized = sanitize(fresh)
+          setSharedState(sanitized)
+          // Cache ke localStorage untuk offline fallback (TV Box)
+          cacheRakaatLocally(sanitized.currentRakaat)
         }
       } catch {
-        // Abaikan error jaringan, coba lagi 3 detik berikutnya
+        // Abaikan error jaringan, coba lagi di interval berikutnya
       }
     }
 
     sync()
-    const interval = setInterval(sync, 3000)
+    const pollingMs = getPollingInterval()
+    const interval = setInterval(sync, pollingMs)
     return () => {
       active = false
       clearInterval(interval)
@@ -256,6 +282,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isAdminLoggedIn,
     adminLogin,
     adminLogout,
+    isInitialLoading,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
