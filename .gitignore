@@ -27,3 +27,6 @@ Thumbs.db
 tsconfig.tsbuildinfo
 
 .vercel
+# Sensitive folders — DO NOT commit to GitHub
+/.github/
+/plan/
