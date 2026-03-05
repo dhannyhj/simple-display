@@ -7,7 +7,6 @@
 .phpactor.json
 .phpunit.result.cache
 /.fleet
-/.github
 /.idea
 /.nova
 /.phpunit.cache
@@ -16,6 +15,7 @@
 /.next
 /auth.json
 /node_modules
+/plan
 /public/build
 /public/hot
 /public/storage
