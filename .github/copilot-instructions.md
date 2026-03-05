@@ -79,6 +79,15 @@ Rules:
 6. No new dependencies unless explicitly approved.
 7. Fail fast on ambiguity; do not invent requirements.
 8. Code-first output, minimal prose, no filler.
+9. **🚫 CRITICAL: DO NOT commit/push/deploy unless explicitly asked by user**
+10. **🚫 CRITICAL: DO NOT modify .gitignore unless explicitly instructed**
+11. **🚫 CRITICAL: DO NOT make ANY git operations (add/commit/push) without explicit approval**
+
+### ⚠️ AUTHORIZATION RULE
+- **User** = exclusive authority for all git operations
+- **AI** = MUST ASK before any: git add, git commit, git push, git rm, .gitignore edits
+- **Consequence**: Unauthorized git operations = VIOLATION (equivalent to unauthorized code deployment)
+- **Default Mode**: Modify code files only, do NOT touch version control
 
 ---
 
