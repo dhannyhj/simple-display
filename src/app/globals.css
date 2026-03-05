@@ -8,9 +8,13 @@
   user-select: none;
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling + Cegah Android font-boosting (kritis untuk Android 5/Chrome 95) */
 html {
   scroll-behavior: smooth;
+  /* Mencegah auto text-size-adjust di Android WebKit — tanpa ini Android 5 memperbesar
+     font secara otomatis ("font boosting") yang menyebabkan jam & teks terlalu besar */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* Custom scrollbar untuk admin panel */
