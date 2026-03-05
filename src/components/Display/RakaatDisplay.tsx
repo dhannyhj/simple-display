@@ -36,8 +36,8 @@ export function RakaatDisplay() {
   // Inline bg style untuk gradient/pattern
   const bgStyle = getBackgroundStyle(
     selectedBackground,
-    currentTheme.bg.replace('bg-', ''),
-    currentTheme.bgSecondary.replace('bg-', '')
+    currentTheme.bg,
+    currentTheme.bgSecondary
   )
 
   const isSelesai = info.isSelesai
