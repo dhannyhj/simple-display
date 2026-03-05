@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     }
 
     const blob = await put(`backgrounds/${file.name}`, file, {
-      access: 'public',
+      access: 'private',
       addRandomSuffix: true,
     })
 
