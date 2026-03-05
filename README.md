@@ -32,7 +32,7 @@ Aplikasi real-time untuk menampilkan jumlah rakaat sholat tarawih di layar TV/pr
 
 #### 1. **Fork/Clone Repository**
 ```bash
-git clone https://github.com/[your-username]/simple-display.git
+git clone https://github.com/dhannyhj/simple-display.git
 cd simple-display
 npm install
 ```
@@ -68,6 +68,267 @@ vercel --prod --yes
 vercel env list
 # Output harus ada UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, BLOB_READ_WRITE_TOKEN
 ```
+
+---
+
+## 🔄 Metode Deployment
+
+Ada **2 pilihan** untuk deploy aplikasi:
+
+### **Method A: Vercel + GitHub (Auto-Deploy) — RECOMMENDED ⭐**
+
+*Deployment otomatis setiap kali push ke GitHub, no manual intervention.*
+
+#### Setup
+
+1. **Link Repository ke Vercel**
+   - Buka [vercel.com](https://vercel.com) → Login → **Add New** → **Project**
+   - Pilih **GitHub** dan authorize Vercel
+   - Pilih repository `simple-display`
+   - Vercel otomatis detect Next.js framework
+
+2. **Configure Environment Variables**
+   - Di Vercel Dashboard → Project → **Settings** → **Environment Variables**
+   - Tambah 3 variables:
+     ```
+     UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
+     UPSTASH_REDIS_REST_TOKEN=AAbyyyyy...
+     BLOB_READ_WRITE_TOKEN=xxx...
+     ```
+   - Save & Redeploy
+
+3. **Enable Auto-Deploy**
+   - Di Vercel Dashboard → **Deployments** → **Settings**
+   - Production Branch: `main` (should be auto-selected)
+   - Preview Deployments: Automatic (untuk setiap PR)
+   - **Save**
+
+#### Workflow
+
+Setiap kali push ke GitHub:
+```bash
+# Local development
+npm run dev
+# ..edit files...
+
+# Commit & push
+git add -A
+git commit -m "feat: new feature"
+git push origin main  # Vercel auto-trigger build & deploy
+```
+
+**Vercel akan:**
+- Detect push ke main branch
+- Auto-deploy ke production dalam 1-2 menit
+- Send notification jika build success/failed
+- URL tetap: `https://simple-display-xxx.vercel.app`
+
+---
+
+### **Method B: VPS Manual (Self-Hosted) — For Advanced Users**
+
+*Deploy di VPS pribadi (AWS, DigitalOcean, Linode, etc.) dengan full control.*
+
+#### Prerequisites
+
+- VPS dengan OS: Ubuntu 20.04+ atau CentOS 8+
+- SSH access ke VPS
+- Domain (optional, atau pakai IP address)
+- Node.js 18+ di VPS
+
+#### Step 1: Setup VPS Environment
+
+```bash
+# SSH ke VPS
+ssh root@your-vps-ip
+
+# Update sistem
+sudo apt update && sudo apt upgrade -y
+
+# Install Node.js (LTS)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Verifikasi
+node --version  # v20.x.x
+npm --version   # 10.x.x
+
+# Install PM2 (process manager)
+sudo npm install -g pm2
+```
+
+#### Step 2: Clone & Setup Repository
+
+```bash
+# Navigate ke app directory
+cd /var/www
+
+# Clone repo
+git clone https://github.com/dhannyhj/simple-display.git
+cd simple-display
+
+# Install dependencies
+npm install
+
+# Create .env.local file
+cat > .env.local << EOF
+UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
+UPSTASH_REDIS_REST_TOKEN=AAbyyyyy...
+BLOB_READ_WRITE_TOKEN=xxx...
+NODE_ENV=production
+EOF
+
+# Build aplikasi
+npm run build
+```
+
+#### Step 3: Configure PM2 Startup
+
+```bash
+# Start aplikasi dengan PM2
+pm2 start npm --name "simple-display" -- start
+
+# Save PM2 config
+pm2 save
+
+# Setup PM2 auto-restart on reboot
+pm2 startup
+# Follow the command output to enable auto-restart
+sudo pm2 startup
+```
+
+#### Step 4: Setup Reverse Proxy (Nginx)
+
+```bash
+# Install Nginx
+sudo apt install -y nginx
+
+# Create config
+sudo nano /etc/nginx/sites-available/simple-display
+```
+
+Paste ini:
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;  # Ganti dengan domain atau IP
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+```bash
+# Enable config
+sudo ln -s /etc/nginx/sites-available/simple-display /etc/nginx/sites-enabled/
+
+# Test Nginx
+sudo nginx -t
+
+# Restart Nginx
+sudo systemctl restart nginx
+```
+
+#### Step 5: Setup SSL (HTTPS) dengan Let's Encrypt
+
+```bash
+# Install Certbot
+sudo apt install -y certbot python3-certbot-nginx
+
+# Generate SSL certificate
+sudo certbot --nginx -d your-domain.com
+
+# Auto-renew setup
+sudo systemctl enable certbot.timer
+```
+
+#### Step 6: Update Aplikasi dari GitHub
+
+Buat script untuk sync dari GitHub:
+
+```bash
+# Create update script
+cat > /var/www/simple-display/update.sh << 'EOF'
+#!/bin/bash
+cd /var/www/simple-display
+git pull origin main
+npm install
+npm run build
+pm2 restart simple-display
+echo "✅ Update completed at $(date)"
+EOF
+
+# Make executable
+chmod +x /var/www/simple-display/update.sh
+```
+
+Jalankan manual atau setup cron:
+```bash
+# Edit crontab
+crontab -e
+
+# Add this line untuk update setiap 30 menit
+*/30 * * * * /var/www/simple-display/update.sh >> /var/www/simple-display/update.log 2>&1
+```
+
+#### Step 7: Monitoring & Logs
+
+```bash
+# Monitor PM2 processes
+pm2 monit
+
+# View application logs
+pm2 logs simple-display
+
+# View Nginx logs
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+```
+
+#### Troubleshooting VPS
+
+**Port 3000 in use:**
+```bash
+sudo lsof -i :3000
+sudo kill -9 <PID>
+```
+
+**PM2 won't start:**
+```bash
+pm2 delete simple-display
+pm2 start npm --name "simple-display" -- start
+```
+
+**Nginx not proxying:**
+```bash
+sudo nginx -t  # Check syntax
+sudo systemctl restart nginx
+```
+
+---
+
+### **Perbandingan: Vercel vs VPS**
+
+| Feature | Vercel (Method A) | VPS (Method B) |
+|---------|------------------|----------------|
+| **Setup** | ⚡ 5 menit | ⏱️ 30-60 menit |
+| **Auto-Deploy** | ✅ Yes | ⚠️ Manual/Cron |
+| **Cost** | 💰 Free tier + $20/mo | 💰 $5-20/mo VPS |
+| **Scaling** | 🚀 Auto | 📦 Manual |
+| **Monitoring** | ✅ Built-in | ⚠️ DIY tools |
+| **SSL Certificate** | ✅ Free auto | ✅ Free (Let's Encrypt) |
+| **Maintenance** | Vercel handles | You handle |
+| **Customization** | Limited | Full control |
+
+**Rekomendasi:**
+- **Vercel** → Best untuk production, minimal maintenance, hobby projects
+- **VPS** → Best untuk full control, custom configuration, budget-conscious
 
 ---
 
@@ -310,7 +571,7 @@ MIT — Bebas gunakan untuk keperluan apapun.
 ## 💬 Support
 
 Untuk pertanyaan atau issue:
-1. Buka GitHub Issues: https://github.com/[your-username]/simple-display/issues
+1. Buka GitHub Issues: https://github.com/dhannyhj/simple-display/issues
 2. Jelaskan error/fitur yang diinginkan
 
 ---
