@@ -1,20 +1,49 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTheme } from '@/hooks/useTheme'
 import type { ThemeId } from '@/types'
+
+type ImageEntry = { url: string; name: string; source: 'local' | 'blob' }
 
 export function ThemeSelector() {
   const { selectedTheme, themeList, setTheme, selectedBackground, backgroundOptions, setBackground } = useTheme()
   const [imgUrl, setImgUrl] = useState('')
-  const [localImages, setLocalImages] = useState<string[]>([])
+  const [images, setImages] = useState<ImageEntry[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
+  const fetchImages = () => {
     fetch('/api/images')
       .then((r) => r.json())
-      .then((data) => setLocalImages(data.images ?? []))
+      .then((data) => setImages(data.images ?? []))
       .catch(() => {})
-  }, [])
+  }
+
+  useEffect(() => { fetchImages() }, [])
+
+  const handleUpload = async (file: File) => {
+    setUploading(true)
+    setUploadError('')
+    const form = new FormData()
+    form.append('file', file)
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: form })
+      const data = await res.json()
+      if (!res.ok) {
+        setUploadError(data.error ?? 'Upload gagal')
+      } else {
+        setBackground(data.url)
+        fetchImages()
+      }
+    } catch {
+      setUploadError('Gagal terhubung ke server')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   const isImageBg =
     selectedBackground.startsWith('http://') ||
@@ -87,37 +116,66 @@ export function ThemeSelector() {
           })}
         </div>
       </div>
-      {/* ── Background Gambar — Folder /public/img ── */}
+      {/* ── Background Gambar: Lokal + Blob ── */}
       <div>
-        <h3 className="text-slate-400 text-xs uppercase tracking-widest font-semibold mb-3">
-          🖼 Background Gambar Lokal
-        </h3>
-        {localImages.length === 0 ? (
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-slate-400 text-xs uppercase tracking-widest font-semibold">
+            🖼️ Background Gambar
+          </h3>
+          {/* Tombol Upload */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1.5 text-xs bg-purple-700 hover:bg-purple-600 disabled:bg-slate-700 disabled:text-slate-500 text-white px-3 py-1.5 rounded-lg transition-all"
+          >
+            {uploading ? (
+              <>
+                <span className="animate-spin">⏳</span> Mengupload...
+              </>
+            ) : (
+              <>⬆️ Upload</>
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/svg+xml"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) handleUpload(file)
+            }}
+          />
+        </div>
+
+        {uploadError && (
+          <p className="text-red-400 text-xs mb-2">❌ {uploadError}</p>
+        )}
+
+        {images.length === 0 ? (
           <p className="text-slate-600 text-xs">
-            Belum ada gambar. Letakkan file di folder{' '}
-            <code className="text-slate-400">public/img/</code> lalu refresh halaman ini.
+            Belum ada gambar. Upload via tombol di atas atau letakkan file di{' '}
+            <code className="text-slate-400">public/img/</code>.
           </p>
         ) : (
           <div className="grid grid-cols-3 gap-2">
-            {localImages.map((filename) => {
-              const src = `/img/${filename}`
-              const isActive = selectedBackground === src
+            {images.map((img) => {
+              const isActive = selectedBackground === img.url
               return (
                 <button
-                  key={filename}
-                  onClick={() => setBackground(isActive ? 'solid' : src)}
-                  title={filename}
+                  key={img.url}
+                  onClick={() => setBackground(isActive ? 'solid' : img.url)}
+                  title={img.name}
                   className={`
                     relative rounded-xl overflow-hidden border-2 transition-all duration-150 aspect-video
                     ${isActive ? 'border-purple-500 ring-2 ring-purple-500/40' : 'border-slate-700 hover:border-slate-500'}
                   `}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={src}
-                    alt={filename}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
+                  {img.source === 'blob' && (
+                    <span className="absolute top-1 left-1 bg-black/50 text-white text-[9px] px-1 rounded">☁️</span>
+                  )}
                   {isActive && (
                     <div className="absolute inset-0 bg-purple-900/40 flex items-center justify-center">
                       <span className="text-white text-lg font-bold">✓</span>
