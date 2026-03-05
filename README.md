@@ -2,6 +2,9 @@
 
 Aplikasi real-time untuk menampilkan jumlah rakaat sholat tarawih di layar TV/projector dengan kontrol admin via web interface. Sempurna untuk masjid, mushala, atau acara ibadah.
 
+![Alt text](https://github.com/dhannyhj/simple-display/blob/main/ss.jpg)
+
+
 ## ✨ Fitur Utama
 
 - **🖥️ Display Layar Besar** — Tampilan full-screen dengan font yang dapat dikustomisasi
