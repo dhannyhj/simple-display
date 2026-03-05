@@ -5,23 +5,33 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'im
 const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
 
 export async function POST(req: Request) {
-  const formData = await req.formData()
-  const file = formData.get('file') as File | null
+  try {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      return NextResponse.json({ error: 'Blob storage belum dikonfigurasi (BLOB_READ_WRITE_TOKEN missing)' }, { status: 503 })
+    }
 
-  if (!file) {
-    return NextResponse.json({ error: 'Tidak ada file' }, { status: 400 })
-  }
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return NextResponse.json({ error: 'Format tidak didukung (JPG, PNG, GIF, WEBP, AVIF, SVG)' }, { status: 400 })
-  }
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'Ukuran file maksimal 5 MB' }, { status: 400 })
-  }
+    const formData = await req.formData()
+    const file = formData.get('file') as File | null
 
-  const blob = await put(`backgrounds/${file.name}`, file, {
-    access: 'public',
-    addRandomSuffix: true,
-  })
+    if (!file) {
+      return NextResponse.json({ error: 'Tidak ada file' }, { status: 400 })
+    }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: 'Format tidak didukung (JPG, PNG, GIF, WEBP, AVIF, SVG)' }, { status: 400 })
+    }
+    if (file.size > MAX_BYTES) {
+      return NextResponse.json({ error: 'Ukuran file maksimal 5 MB' }, { status: 400 })
+    }
 
-  return NextResponse.json({ url: blob.url })
+    const blob = await put(`backgrounds/${file.name}`, file, {
+      access: 'public',
+      addRandomSuffix: true,
+    })
+
+    return NextResponse.json({ url: blob.url })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[upload] error:', msg)
+    return NextResponse.json({ error: `Upload gagal: ${msg}` }, { status: 500 })
+  }
 }
