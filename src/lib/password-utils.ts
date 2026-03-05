@@ -142,3 +142,24 @@ export async function getStoredHash(): Promise<string> {
   await initDefaultPassword()
   return localStorage.getItem(STORAGE_KEYS.PASSWORD_HASH) ?? await hashPassword(DEFAULT_PASSWORD)
 }
+
+/**
+ * Mengganti password.
+ * Verifikasi old password dulu, baru simpan hash baru.
+ * Return: 'ok' | 'wrong-old' | 'error'
+ */
+export async function changePassword(
+  oldPassword: string,
+  newPassword: string
+): Promise<'ok' | 'wrong-old' | 'error'> {
+  try {
+    const storedHash = await getStoredHash()
+    const valid = await verifyPassword(oldPassword, storedHash)
+    if (!valid) return 'wrong-old'
+    const newHash = await hashPassword(newPassword)
+    localStorage.setItem(STORAGE_KEYS.PASSWORD_HASH, newHash)
+    return 'ok'
+  } catch {
+    return 'error'
+  }
+}

@@ -10,9 +10,14 @@ export type ThemeId =
   | 'dark-purple'
   | 'light-purple'
   | 'dark-orange'
+  | 'light-orange'
   | 'dark-red'
+  | 'light-red'
   | 'dark-cyan'
+  | 'light-cyan'
   | 'dark-slate'
+  | 'light-slate'
+  | 'light-amber'
 
 export type BackgroundType = 'solid' | 'gradient' | 'pattern'
 
@@ -73,6 +78,8 @@ export interface AdminCredentials {
  * State yang di-share ke Vercel KV (lintas device).
  * adminSessionToken TIDAK disertakan — itu device-local.
  */
+export type WitirMode = '2+1' | '3'
+
 export interface SharedState {
   currentRakaat: number
   selectedTheme: ThemeId
@@ -83,5 +90,8 @@ export interface SharedState {
   fontBold: boolean
   fontItalic: boolean
   fontUnderline: boolean
+  // Sholat config
+  totalTarawihSalam: number  // jumlah salam tarawih, default 10 (range 2-20 genap)
+  witirMode: WitirMode       // '2+1' = 2 salam witir | '3' = 3 rakaat 1 salam
   lastUpdated: number
 }

@@ -6,13 +6,12 @@ import { useTheme } from '@/hooks/useTheme'
 import { useApp } from '@/context/AppContext'
 import { Clock } from '@/components/Display/Clock'
 import { getBackgroundStyle } from '@/lib/backgrounds'
-import { TOTAL_SALAM } from '@/lib/rakaat-constants'
 
 export function RakaatDisplay() {
-  const {
-    currentRakaat,
+  const { currentRakaat,
     info,
     progressPercent,
+    totalSalam,
   } = useRakaat()
 
   const { currentTheme, selectedBackground } = useTheme()
@@ -99,7 +98,7 @@ export function RakaatDisplay() {
           <div className="w-full max-w-md px-4 mb-6">
             <div className={`flex justify-between text-xs mb-1 ${currentTheme.textSecondary} opacity-60`}>
               <span>Salam {currentRakaat}</span>
-              <span>Total {TOTAL_SALAM} Salam</span>
+              <span>Total {totalSalam} Salam</span>
             </div>
             <div className={`w-full h-3 rounded-full ${currentTheme.progressTrack} overflow-hidden`}>
               <div

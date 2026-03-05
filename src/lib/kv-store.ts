@@ -23,6 +23,8 @@ export const DEFAULT_SHARED_STATE: SharedState = {
   fontBold: true,
   fontItalic: false,
   fontUnderline: false,
+  totalTarawihSalam: 10,
+  witirMode: '2+1',
   lastUpdated: 0,
 }
 

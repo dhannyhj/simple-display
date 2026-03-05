@@ -3,10 +3,9 @@
 import { useState } from 'react'
 import { useRakaat } from '@/hooks/useRakaat'
 import { useApp } from '@/context/AppContext'
-import { TOTAL_SALAM } from '@/lib/rakaat-constants'
 
 export function Controls() {
-  const { currentRakaat, info, label, subLabel, progressPercent, isFirst, isLast, nextRakaat, prevRakaat, resetRakaat } = useRakaat()
+  const { currentRakaat, info, label, subLabel, progressPercent, isFirst, isLast, nextRakaat, prevRakaat, resetRakaat, totalSalam } = useRakaat()
   const { adminLogout } = useApp()
   const [confirmReset, setConfirmReset] = useState(false)
   const [pressed, setPressed] = useState(false)
@@ -44,14 +43,14 @@ export function Controls() {
         <div className="text-slate-400 text-sm mb-1">{subLabel}</div>
         {!isSelesai && (
           <div className="text-slate-500 text-xs">
-            Rakaat: {info.rakaatRange} &nbsp;•&nbsp; Salam {currentRakaat} dari {TOTAL_SALAM}
+            Rakaat: {info.rakaatRange} &nbsp;&bull;&nbsp; Salam {currentRakaat} dari {totalSalam}
           </div>
         )}
 
         {/* Progress */}
         <div className="mt-4">
           <div className="flex justify-between text-xs text-slate-500 mb-1">
-            <span>Salam {currentRakaat} dari {TOTAL_SALAM}</span>
+            <span>Salam {currentRakaat} dari {totalSalam}</span>
             <span>{progressPercent}%</span>
           </div>
           <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">

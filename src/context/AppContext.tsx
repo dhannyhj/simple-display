@@ -9,11 +9,11 @@ import {
   useRef,
   ReactNode,
 } from 'react'
-import type { SharedState, ThemeId } from '@/types'
+import type { SharedState, ThemeId, WitirMode } from '@/types'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { DEFAULT_THEME, themeList } from '@/lib/themes'
 import { DEFAULT_BACKGROUND, backgroundOptions } from '@/lib/backgrounds'
-import { TOTAL_SALAM } from '@/lib/rakaat-constants'
+import { getTotalSalam, DEFAULT_TARAWIH_SALAM, DEFAULT_WITIR_MODE } from '@/lib/rakaat-constants'
 import {
   STORAGE_KEYS,
   initDefaultPassword,
@@ -35,6 +35,8 @@ const DEFAULT_STATE: SharedState = {
   fontBold: true,
   fontItalic: false,
   fontUnderline: false,
+  totalTarawihSalam: DEFAULT_TARAWIH_SALAM,
+  witirMode: DEFAULT_WITIR_MODE,
   lastUpdated: 0,
 }
 
@@ -42,10 +44,17 @@ const DEFAULT_STATE: SharedState = {
 function sanitize(raw: SharedState): SharedState {
   const validThemeIds = themeList.map((t) => t.id as string)
   const validBgIds = backgroundOptions.map((b) => b.id)
+  const rawTarawih = Number.isFinite(raw.totalTarawihSalam) && raw.totalTarawihSalam >= 2
+    ? raw.totalTarawihSalam
+    : DEFAULT_TARAWIH_SALAM
+  const rawWitirMode = raw.witirMode === '2+1' || raw.witirMode === '3'
+    ? raw.witirMode
+    : DEFAULT_WITIR_MODE
+  const totalSalam = getTotalSalam(rawTarawih, rawWitirMode)
   return {
     ...raw,
     currentRakaat: Number.isFinite(raw.currentRakaat)
-      ? Math.max(1, Math.min(raw.currentRakaat, TOTAL_SALAM))
+      ? Math.max(1, Math.min(raw.currentRakaat, totalSalam))
       : DEFAULT_STATE.currentRakaat,
     selectedTheme: validThemeIds.includes(raw.selectedTheme as string)
       ? raw.selectedTheme
@@ -66,6 +75,10 @@ function sanitize(raw: SharedState): SharedState {
     fontBold: typeof raw.fontBold === 'boolean' ? raw.fontBold : DEFAULT_STATE.fontBold,
     fontItalic: typeof raw.fontItalic === 'boolean' ? raw.fontItalic : DEFAULT_STATE.fontItalic,
     fontUnderline: typeof raw.fontUnderline === 'boolean' ? raw.fontUnderline : DEFAULT_STATE.fontUnderline,
+    totalTarawihSalam: Number.isFinite(raw.totalTarawihSalam) && raw.totalTarawihSalam >= 2 && raw.totalTarawihSalam <= 20 && raw.totalTarawihSalam % 2 === 0
+      ? raw.totalTarawihSalam
+      : DEFAULT_STATE.totalTarawihSalam,
+    witirMode: raw.witirMode === '2+1' || raw.witirMode === '3' ? raw.witirMode : DEFAULT_STATE.witirMode,
     lastUpdated: raw.lastUpdated ?? 0,
   }
 }
@@ -103,6 +116,9 @@ interface AppContextType {
   setBackground: (bgId: string) => void
   fontSettings: { fontFamily: string; fontScale: number; fontBold: boolean; fontItalic: boolean; fontUnderline: boolean }
   setFontSettings: (patch: Partial<SharedState>) => void
+  totalTarawihSalam: number
+  witirMode: WitirMode
+  setSholatSettings: (patch: Partial<SharedState>) => void
   isAdminLoggedIn: boolean
   adminLogin: (password: string) => Promise<boolean>
   adminLogout: () => void
@@ -169,9 +185,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // ── Rakaat Actions ────────────────────────────────────────────────────
   const nextRakaat = useCallback(() => {
-    const next = Math.min(sharedState.currentRakaat + 1, TOTAL_SALAM)
+    const totalSalam = getTotalSalam(sharedState.totalTarawihSalam, sharedState.witirMode)
+    const next = Math.min(sharedState.currentRakaat + 1, totalSalam)
     update({ currentRakaat: next })
-  }, [sharedState.currentRakaat, update])
+  }, [sharedState.currentRakaat, sharedState.totalTarawihSalam, sharedState.witirMode, update])
 
   const prevRakaat = useCallback(() => {
     const next = Math.max(sharedState.currentRakaat - 1, 1)
@@ -192,6 +209,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [update])
 
   const setFontSettings = useCallback((patch: Partial<SharedState>) => {
+    update(patch)
+  }, [update])
+
+  const setSholatSettings = useCallback((patch: Partial<SharedState>) => {
     update(patch)
   }, [update])
 
@@ -229,6 +250,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       fontUnderline: sharedState.fontUnderline,
     },
     setFontSettings,
+    totalTarawihSalam: sharedState.totalTarawihSalam,
+    witirMode: sharedState.witirMode,
+    setSholatSettings,
     isAdminLoggedIn,
     adminLogin,
     adminLogout,

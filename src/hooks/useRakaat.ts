@@ -7,19 +7,20 @@ import {
   getRakaatSubLabel,
   getProgressPercent,
   getTarawihDots,
-  TOTAL_SALAM,
+  getTotalSalam,
 } from '@/lib/rakaat-constants'
 
 export function useRakaat() {
-  const { currentRakaat, nextRakaat, prevRakaat, resetRakaat } = useApp()
+  const { currentRakaat, nextRakaat, prevRakaat, resetRakaat, totalTarawihSalam, witirMode } = useApp()
 
-  const info = getRakaatInfo(currentRakaat)
+  const totalSalam = getTotalSalam(totalTarawihSalam, witirMode)
+  const info = getRakaatInfo(currentRakaat, totalTarawihSalam, witirMode)
   const label = getRakaatLabel(info)
-  const subLabel = getRakaatSubLabel(info)
-  const progressPercent = getProgressPercent(currentRakaat)
-  const tarawihDots = getTarawihDots(currentRakaat)
+  const subLabel = getRakaatSubLabel(info, totalTarawihSalam, witirMode)
+  const progressPercent = getProgressPercent(currentRakaat, totalTarawihSalam, witirMode)
+  const tarawihDots = getTarawihDots(currentRakaat, totalTarawihSalam)
   const isFirst = currentRakaat <= 1
-  const isLast = currentRakaat >= TOTAL_SALAM
+  const isLast = currentRakaat >= totalSalam
 
   return {
     currentRakaat,
@@ -33,6 +34,6 @@ export function useRakaat() {
     nextRakaat,
     prevRakaat,
     resetRakaat,
-    totalSalam: TOTAL_SALAM,
+    totalSalam,
   }
 }

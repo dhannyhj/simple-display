@@ -5,6 +5,8 @@ import { PasswordGate } from '@/components/Admin/PasswordGate'
 import { Controls } from '@/components/Admin/Controls'
 import { ThemeSelector } from '@/components/Admin/ThemeSelector'
 import { FontSelector } from '@/components/Admin/FontSelector'
+import { SholatSettings } from '@/components/Admin/SholatSettings'
+import { ChangePasswordForm } from '@/components/Admin/ChangePasswordForm'
 import { useRakaat } from '@/hooks/useRakaat'
 import Link from 'next/link'
 
@@ -73,6 +75,18 @@ export default function AdminPage() {
 
           {/* Font Settings */}
           <FontSelector />
+
+          {/* Divider */}
+          <div className="border-t border-slate-800" />
+
+          {/* Pengaturan Sholat */}
+          <SholatSettings />
+
+          {/* Divider */}
+          <div className="border-t border-slate-800" />
+
+          {/* Ganti Password */}
+          <ChangePasswordForm />
         </main>
       </div>
     </PasswordGate>
