@@ -319,16 +319,20 @@ sudo systemctl restart nginx
 |---------|------------------|----------------|
 | **Setup** | ⚡ 5 menit | ⏱️ 30-60 menit |
 | **Auto-Deploy** | ✅ Yes | ⚠️ Manual/Cron |
-| **Cost** | 💰 Free tier + $20/mo | 💰 $5-20/mo VPS |
+| **Cost** | 🎉 Gratis (Hobby Plan) | 💰 $5-20/mo VPS |
 | **Scaling** | 🚀 Auto | 📦 Manual |
 | **Monitoring** | ✅ Built-in | ⚠️ DIY tools |
 | **SSL Certificate** | ✅ Free auto | ✅ Free (Let's Encrypt) |
 | **Maintenance** | Vercel handles | You handle |
 | **Customization** | Limited | Full control |
 
+\*\*Catatan Vercel Cost:\*\*
+- **Hobby Plan (Free)** — Gratis sepenuhnya, perfect untuk hobby projects & side projects seperti Simple Display
+- **Pro Plan ($20/mo)** — Optional, hanya jika butuh advanced features (Team collaboration, Advanced Analytics, Priority support) — **TIDAK diperlukan** untuk use case ini
+
 **Rekomendasi:**
-- **Vercel** → Best untuk production, minimal maintenance, hobby projects
-- **VPS** → Best untuk full control, custom configuration, budget-conscious
+- **Vercel** → Best untuk production, minimal maintenance, **GRATIS untuk hobby projects**, no credit card needed
+- **VPS** → Best untuk full control, custom configuration, membutuhkan budget $5-20/bulan
 
 ---
 
