@@ -48,13 +48,13 @@ export function RakaatDisplay() {
       className={`
         relative min-h-screen w-full flex flex-col items-center justify-center
         ${currentTheme.bg} ${currentTheme.text}
-        overflow-hidden select-none transition-colors duration-700
+        overflow-hidden select-none
       `}
       style={bgStyle}
     >
-      {/* ── Dekorasi lingkaran latar ── */}
-      <div className={`absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-10 ${currentTheme.accentBg} blur-3xl pointer-events-none`} />
-      <div className={`absolute -bottom-32 -right-32 w-96 h-96 rounded-full opacity-10 ${currentTheme.accentBg} blur-3xl pointer-events-none`} />
+      {/* ── Dekorasi lingkaran latar — blur dihapus (Mali-450 GPU tidak support CSS filter blur, menyebabkan hang 2-3 detik) ── */}
+      <div className={`absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-5 ${currentTheme.accentBg} pointer-events-none`} />
+      <div className={`absolute -bottom-32 -right-32 w-96 h-96 rounded-full opacity-5 ${currentTheme.accentBg} pointer-events-none`} />
 
       {/* ── Konten Utama — key berubah → CSS animate-in terpicu, tidak perlu state ── */}
       <div

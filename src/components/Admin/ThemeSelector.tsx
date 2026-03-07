@@ -148,14 +148,24 @@ export function ThemeSelector() {
           />
         </div>
 
+        {/* ⚠️ Android 5 Compatibility Warning */}
+        <div className="bg-amber-900/30 border border-amber-700/50 rounded-lg p-3 mb-3">
+          <p className="text-amber-300 text-xs font-semibold mb-1 flex items-center gap-1.5">
+            ⚠️ Catatan Kompatibilitas
+          </p>
+          <p className="text-amber-200/80 text-xs leading-relaxed">
+            <strong>☁️ Upload Blob:</strong> Android 6+ saja (certificate issue di Android 5)<br />
+            <strong>📁 Lokal:</strong> Semua device (letakkan di <code className="text-amber-100">public/img/</code>)
+          </p>
+        </div>
+
         {uploadError && (
           <p className="text-red-400 text-xs mb-2">❌ {uploadError}</p>
         )}
 
         {images.length === 0 ? (
           <p className="text-slate-600 text-xs">
-            Belum ada gambar. Upload via tombol di atas atau letakkan file di{' '}
-            <code className="text-slate-400">public/img/</code>.
+            Belum ada gambar. Untuk Android 5: gunakan lokal di <code className="text-slate-400">public/img/</code>
           </p>
         ) : (
           <div className="grid grid-cols-3 gap-2">
@@ -193,6 +203,9 @@ export function ThemeSelector() {
         <h3 className="text-slate-400 text-xs uppercase tracking-widest font-semibold mb-3">
           📷 Background Gambar (URL)
         </h3>
+        <p className="text-slate-500 text-xs mb-2">
+          ⚠️ URL eksternal punya masalah pada Android 5. Gunakan lokal untuk kompatibilitas maksimal.
+        </p>
         <div className="flex gap-2">
           <input
             type="url"
